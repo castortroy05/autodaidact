@@ -1,13 +1,12 @@
-# autodaidact/autolearn/agents/opus_mt_translation_agent.py
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+from autodaidact.autolearn.models.huggingface_wrapper import HuggingFaceWrapper
+from transformers import AutoModelForSeq2SeqLM
 
 class OpusMTTranslationAgent:
     def __init__(self, model_name='Helsinki-NLP/opus-mt-en-es'):
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        self.model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
+        self.model_wrapper = HuggingFaceWrapper(model_name=model_name, model_class=AutoModelForSeq2SeqLM)
 
-    def translate(self, text):
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding='longest', return_tensors="pt")
-        outputs = self.model.generate(**inputs)
-        translated_text = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+    def translate_text(self, text):
+        encoded_input = self.model_wrapper.encode([text], return_tensors="pt")
+        translated_tokens = self.model_wrapper.model.generate(**encoded_input)
+        translated_text = self.model_wrapper.tokenizer.decode(translated_tokens[0], skip_special_tokens=True)
         return translated_text

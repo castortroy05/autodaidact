@@ -1,15 +1,12 @@
-# autodaidact/autolearn/agents/distilbert_classification_agent.py
-from transformers import DistilBertTokenizer, DistilBertForSequenceClassification
-import torch
+from autodaidact.autolearn.models.huggingface_wrapper import HuggingFaceWrapper
+from transformers import DistilBertForSequenceClassification
 
 class DistilBERTClassificationAgent:
     def __init__(self, model_name='distilbert-base-uncased'):
-        self.tokenizer = DistilBertTokenizer.from_pretrained(model_name)
-        self.model = DistilBertForSequenceClassification.from_pretrained(model_name)
+        self.model_wrapper = HuggingFaceWrapper(model_name=model_name, model_class=DistilBertForSequenceClassification)
 
-    def predict(self, text):
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, padding=True, max_length=512)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        prediction = outputs.logits.argmax(-1).item()
+    def classify_text(self, text):
+        encoded_input = self.model_wrapper.encode([text])
+        prediction = self.model_wrapper.predict(encoded_input)
+        # Additional logic to convert prediction to label
         return prediction
